@@ -1,60 +1,41 @@
-import { useEffect, useState } from "react";
-import "./App.css";
-import { getPost } from "./api/wordpress";
+  import { useEffect, useState } from "react";
+  import "./App.css";
+  import { getfooditems } from "./api/wordpress";
+import type { FoodItem } from "./types/food";
+import Navbar from "./components/Navbar/Navbar";
+import Hero from "./components/Hero/Hero";
 
-interface Post {
-  id: number;
-  title: {
-    rendered: string;
-  };
-  content: {
-    rendered: string;
-  };
-}
 
-function App() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  function App() {
+    const [food, setfood] = useState<FoodItem[]>([]);
+    const [error, seterror] = useState("");
+    const [loading, setloading] = useState(true)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getPost();
-
-        console.log("Data received in App:", data);
-        console.log("Is array in App:", Array.isArray(data));
-
-        if (Array.isArray(data)) {
-          setPosts(data);
-        } else {
-          console.error("Expected an array but received:", data);
-          setPosts([]);
-        }
+    useEffect(() => {
+      const fetchData = async () => {
+         try {
+        const data = await getfooditems();
+        setfood(data);
       } catch (error) {
-        console.error("Failed to fetch posts:", error);
-        setPosts([]);
+        console.error("Failed to fetch food items:", error);
+        seterror("Unable to load the menu. Please try again later.");
+      } finally {
+        setloading(false);
       }
     };
 
-    fetchData();
-  }, []);
+      fetchData();
+    }, []);
+  if (error) {
+    return <p>{error}</p>;
+  }
 
-  return (
-    <div>
-      <h1>Website</h1>
+    return (
+       <main>
+      <Navbar/>
+      <Hero/>
+    </main>
+    );
+  }
 
-      {posts.map((post) => (
-        <article key={post.id}>
-          <h2>{post.title.rendered}</h2>
-
-          <div
-            dangerouslySetInnerHTML={{
-              __html: post.content.rendered,
-            }}
-          />
-        </article>
-      ))}
-    </div>
-  );
-}
-
-export default App;
+  export default App;
